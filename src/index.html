@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>APM</title>
+    <!-- This is a base path which is often set to "/" . -->
+    <!-- All the routing and downloaded files are relative to this root. -->
+    <!-- This generates a route such as this: localhost:4200 . -->
+    <!-- Using the root base during development is ok, but when the application is deployed it makes no sense. -->
+    <!-- 
+      If we need to deploy production application inside of subfolder such as www.mySite.com/APM/ we would need to change 
+      base href to <base href="/APM/" .
+      We could do that manually in here, but the better solution would be to use Angular CLI.
+      When deploying app to production you could use ng build --base-href /APM/
+    -->
+    <base href="/" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  </head>
+  <body>
+    <pm-root></pm-root>
+  </body>
+</html>
