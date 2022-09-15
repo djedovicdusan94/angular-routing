@@ -293,3 +293,32 @@ export class AppModule {}
 //  - Accessing the data array from the ActivatedRoute service gives us a reference to the data instance. All code that retrieves and works with the same
 //      element from the data array shares the same instance. So any change made to this property in any one component is seen by all components that
 //      reference the same property. This sharing of the data instance is useful when we are working with child routes as we will see later.
+
+// * Child routes
+//  - Using child routes, we define a route a route hierarchy to better organize, encapsulate and navigate through our application.
+//  - This also makes it easier to lazy load routes, improving the startup performance of the application. Note that child routes are required for lazy loading.
+//
+//                               App                                // Here we see two primary routes, Welcome and Products.
+//                                |                                 // Products route is a componentless route meaning it does not activate a component but rather
+//                  ______________|________________                 //   simply acts as a parent route allowing us to group the product routes as child routes.
+//       /welcome   |                              | /products      // Product route has three children, Product List, Product Edit and Product Details.
+//              ---------                    -----------            // Further down the line Product Edit has two children, Edit Info and Edit tags.
+//              |Welcome|                    |_________|
+//                                                |
+//                                                | /:id/edit
+//                              __________________|__________________
+//                            / |                 |                 | /:id
+//                              |                 |                 |
+//                       --------------    --------------   ----------------
+//                       |Product List|    |Product Edit|   |Product Detail|
+//                                                |
+//                                                |
+//                                       -------------------
+//                                       |                 |
+//                                 /info |                 | /tags
+//                                  -----------       -----------
+//                                  |Edit Info|       |Edit Tags|
+//
+//
+// Key purpose of child routes is to define routes that are displayed within other routes, or more technically accurate, to display routed component template,
+//  within other routed component templates.
