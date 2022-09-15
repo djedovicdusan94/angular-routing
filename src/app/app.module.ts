@@ -262,7 +262,7 @@ export class AppModule {}
 //        RouterModule.forChild([ { path: "products", component: ProductComponent, data: { pageTitle: "ProductList" } } ])
 //        this.pageTitle = this.route.snapshot.data["pageTitle"];
 
-// * Route resolvers
+// * Route resolvers:
 //  - Enables data prefetching.
 //  - Improves flow when an error occurs.
 //  - Prevents display of a partial page while waiting for data to be retrieved. Resolver can get the data first and then route to the component.
@@ -287,15 +287,15 @@ export class AppModule {}
 */
 //  - We can use the ActivatedRoute snapshot to read the resolver data. Simply access the data property of the snapshot referencing the desired element
 //      using the name of the data we defined in the route configuration, or in this case:
-//        Via snapshot: this.product = this.route.snapshot.data["resolvedData"];
-//        Via observable: this.route.data.subscribe(data => this.product = data["product"]);
+//        Via snapshot: this.product = this.route.snapshot.data["resolvedData"].product; // .product only if you return object from the resolver.
+//        Via observable: this.route.data.subscribe(data => this.product = data["resolvedData"].product); // .product only if you return object from the resolver.
 //        To understand difference between 2 approaches read "Difference between reading route parameters via snapshot vs observable".
 //  - Accessing the data array from the ActivatedRoute service gives us a reference to the data instance. All code that retrieves and works with the same
 //      element from the data array shares the same instance. So any change made to this property in any one component is seen by all components that
 //      reference the same property. This sharing of the data instance is useful when we are working with child routes as we will see later.
 
-// * Child routes
-//  - Using child routes, we define a route a route hierarchy to better organize, encapsulate and navigate through our application.
+// * Child routes:
+//  - Using child routes, we define a route hierarchy to better organize, encapsulate and navigate through our application.
 //  - This also makes it easier to lazy load routes, improving the startup performance of the application. Note that child routes are required for lazy loading.
 //
 //                               App                                // Here we see two primary routes, Welcome and Products.
@@ -305,10 +305,10 @@ export class AppModule {}
 //              ---------                    -----------            // Further down the line Product Edit has two children, Edit Info and Edit tags.
 //              |Welcome|                    |_________|
 //                                                |
-//                                                | /:id/edit
+//                                                |
 //                              __________________|__________________
-//                            / |                 |                 | /:id
 //                              |                 |                 |
+//                            / |                 | /:id/edit       | /:id
 //                       --------------    --------------   ----------------
 //                       |Product List|    |Product Edit|   |Product Detail|
 //                                                |
@@ -322,3 +322,81 @@ export class AppModule {}
 //
 // Key purpose of child routes is to define routes that are displayed within other routes, or more technically accurate, to display routed component template,
 //  within other routed component templates.
+/*   |----------------------------------------------
+ /   | {
+ /   |   path: "products/:id/edit",
+ /   |   component: ProductEditComponent,
+ /   |   resolve: {
+ /   |     resolvedData: ProductResolver,
+ /   |   },
+ /   |   children: [
+ /   |     {
+ /   |       path: "",
+ /   |       redirectTo: "info",
+ /   |       pathMatch: "full",
+ /   |     },
+ /   |     {
+ /   |       path: "info",
+ /   |       component: ProductEditInfoComponent,
+ /   |     },
+ /   |     {
+ /   |       path: "tags",
+ /   |       component: ProductEditTagsComponent,
+ /   |     },
+ /   |   ],
+ /   | },
+*/
+//  - As we can see in the example above, for each child route we first define the path. The first route is for the empty path and this defines
+//      the default path to display if no child path has been specified.
+//  - After the first child we have info path. We specify that ProductEditInfoComponent will be activated when the route is activated.
+//      We also do the same thing for the tags path.
+//  - To display a template for a child route within the parent's template, the parent's template must contain a router outlet directive.
+//      That router outlet would then identify the location where the child's template is displayed within the paren't template.
+//      The outlet for displaying child routes looks basically the same as the syntax for the primary outlet.
+//  - Now when navigating to http://localhost:4200/products/2/edit , we will be redirected to the http://localhost:4200/products/2/edit/info.
+//  - This will render the following:
+/*      ----------------------------------------------------------------------------------------------------------------------------------
+/       |<div class="card">
+/       |
+/       |  <div class="card-header"> // * Everything around router outlet comes from primary route /products/2/edit
+/       |    {{ pageTitle }}         // *   and is part of the AppComponent's outlet.
+/       |  </div>
+/       |
+/       |  <div class="card-body" *ngIf="product">
+/       |    <div class="wizard">
+/       |      <a [routerLink]="['info']"> Basic information </a> // Activating child routes with relative navigation.
+/       |      <a [routerLink]="['tags']"> Search tags </a>
+/       |    </div>
+/       |
+/       |    <router-outlet></router-outlet> // * This is the ProductEditComponent outlet which renders ProductEditInfoComponent and ProductEditTagsComponent
+/       |                                    
+/       |   </div>
+/       |</div>
+/       |
+/       |<div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+*/
+//  - There are two ways to activate a child route:
+//    - With an absolute path (this way router will start from the top of the route configuration):
+//        <a [routerLink]="['/products', products.id, 'edit', 'info']">Info</a>
+//        Or from the component class: this.router.navigate(["/products", this.product.id, "edit", "info"]);
+//    - With a relative path (often a better option). Relative path is relative to the current url segment:
+//        <a [routerLink]="['info']">Info</a> // Leave out the slash!
+//        Or from the component class: this.router.navigate(["info"], { relativeTo: this.route }); // Leave out the slash!
+
+// * Obtaining data for a child route:
+//  - There are several solutions for this:
+//    - Child component can contact product data service:
+//        this.productService.getProduct(id).subscribe(product => this.product = product);
+//    - We can create resolvers for our child routes and then get the data from inside of the child component:
+//        Via snapshot: this.product = this.route.snapshot.data["resolvedData"].product; // .product only if you return object from the resolver.
+//        Via observable: this.route.data.subscribe(data => this.product = data["resolvedData"].product); // .product only if you return object from the resolver.
+//    - If parent already has its own resolver and the child routes work with the same data we can instead use route resolver on the parent route:
+//        Via snapshot: this.product = this.route.parent.snapshot.data["resolvedData"].product; // .product only if you return object from the resolver.
+//        Via observable: this.route.parent.data.subscribe(data => this.product = data["resolvedData"].product); // .product only if you return object from the resolver.
+//        Recall that this syntax provides a reference to the product data instance so our parent route and each child route with a reference
+//          will share that instance.
+
+// * Validating across child routes:
+//  - Best pattern is to define a form in each child component, but perform manual validation.
+//  - Since the save button is on the parent ProductEditComponent we will add the validation there.
+//  - For more information on how to implement this please visit ProductEditComponent.

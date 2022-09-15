@@ -1,19 +1,25 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 
-import { Product } from "../product";
+import { Product, ProductResolved } from "../product";
 
 @Component({
   templateUrl: "./product-edit-tags.component.html",
 })
 export class ProductEditTagsComponent implements OnInit {
-  errorMessage = "";
   newTags = "";
-  product = { id: 1, category: "test", tags: ["test"] };
+  errorMessage: String | undefined = "";
+  product: Product | null = null;
 
   constructor(private route: ActivatedRoute) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.route.parent?.data.subscribe((data) => {
+      const resolvedData: ProductResolved = data["resolvedData"];
+      this.errorMessage = resolvedData.error;
+      this.product = resolvedData.product;
+    });
+  }
 
   // Add the defined tags
   addTags(): void {

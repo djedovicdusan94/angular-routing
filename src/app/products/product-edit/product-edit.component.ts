@@ -15,6 +15,9 @@ export class ProductEditComponent implements OnInit {
   errorMessage = "";
 
   product: Product | null = null;
+  // We define a property called dataIsValid and set its type to be a set of key-value pairs where the key is the tab path name
+  //  and the value is true for valid and false for invalid.
+  private dataIsValid: { [key: string]: boolean } = {};
 
   constructor(
     private productService: ProductService,
@@ -38,12 +41,13 @@ export class ProductEditComponent implements OnInit {
     });
   }
 
-  getProduct(id: number): void {
-    this.productService.getProduct(id).subscribe({
-      next: (product) => this.onProductRetrieved(product),
-      error: (err) => (this.errorMessage = err),
-    });
-  }
+  // No need to have this anymore, we use resolvers to fetch the data.
+  // getProduct(id: number): void {
+  //   this.productService.getProduct(id).subscribe({
+  //     next: (product) => this.onProductRetrieved(product),
+  //     error: (err) => (this.errorMessage = err),
+  //   });
+  // }
 
   onProductRetrieved(product: Product | null): void {
     this.product = product;
@@ -76,22 +80,24 @@ export class ProductEditComponent implements OnInit {
 
   saveProduct(): void {
     if (this.product) {
-      if (this.product.id === 0) {
-        this.productService.createProduct(this.product).subscribe({
-          next: () =>
-            this.onSaveComplete(
-              `The new ${this.product?.productName} was saved`
-            ),
-          error: (err) => (this.errorMessage = err),
-        });
-      } else {
-        this.productService.updateProduct(this.product).subscribe({
-          next: () =>
-            this.onSaveComplete(
-              `The updated ${this.product?.productName} was saved`
-            ),
-          error: (err) => (this.errorMessage = err),
-        });
+      if (this.isValid()) {
+        if (this.product.id === 0) {
+          this.productService.createProduct(this.product).subscribe({
+            next: () =>
+              this.onSaveComplete(
+                `The new ${this.product?.productName} was saved`
+              ),
+            error: (err) => (this.errorMessage = err),
+          });
+        } else {
+          this.productService.updateProduct(this.product).subscribe({
+            next: () =>
+              this.onSaveComplete(
+                `The updated ${this.product?.productName} was saved`
+              ),
+            error: (err) => (this.errorMessage = err),
+          });
+        }
       }
     } else {
       this.errorMessage = "Please correct the validation errors.";
@@ -105,5 +111,49 @@ export class ProductEditComponent implements OnInit {
 
     // Navigate back to the product list
     this.router.navigate(["/products"]);
+  }
+
+  // This method takes in the path of the tab to check.
+  // Gets called when any of the inputs change.
+  isValid(path?: string): boolean {
+    this.validate();
+
+    // If checking a specific tab it returns the result from the validation data structure for that tab
+    if (path) {
+      return this.dataIsValid[path];
+    }
+
+    // Otherwise it checks every entry in the dataIsValid data structure and returns true only if the validation of all tabs is true.
+    return (
+      this.dataIsValid &&
+      Object.keys(this.dataIsValid).every((d) => this.dataIsValid[d] === true)
+    );
+  }
+
+  validate(): void {
+    // Clear the validation object
+    this.dataIsValid = {};
+
+    // Here we are validating product data, not the form input elements, to perform our manual validation.
+    // Recall that the ActivatedRoute service data property gives us a reference to the product instance, so any changes to the product
+    //  instance made on any of the tabs is reflected in the parent components instance as well.
+
+    // 'info' tab
+    if (
+      this.product?.productName &&
+      this.product.productName.length >= 3 &&
+      this.product.productCode
+    ) {
+      this.dataIsValid["info"] = true;
+    } else {
+      this.dataIsValid["info"] = false;
+    }
+
+    // 'tags' tab
+    if (this.product?.category && this.product.category.length >= 3) {
+      this.dataIsValid["tags"] = true;
+    } else {
+      this.dataIsValid["tags"] = false;
+    }
   }
 }

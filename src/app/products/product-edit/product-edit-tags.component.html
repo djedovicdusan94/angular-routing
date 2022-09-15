@@ -3,7 +3,7 @@
     <fieldset>
       <legend>Product Search Tags</legend>
 
-      <div class="row mt-2">
+      <div class="row" style="margin-top: 10px">
         <label class="col-md-2 col-form-label" for="categoryId">Category</label>
         <div class="col-md-8">
           <input
@@ -35,7 +35,7 @@
         </div>
       </div>
 
-      <div class="row mt-2">
+      <div class="row" style="margin-top: 10px">
         <label class="col-md-2 col-form-label" for="tagsId">Search Tags</label>
         <div class="col-md-8">
           <input
@@ -60,7 +60,7 @@
       </div>
 
       <div class="row">
-        <div class="col-md-8 offset-md-2">
+        <div class="col-md-8 offset-md-2" style="margin-top: 10px">
           <span *ngFor="let tag of product.tags; let i = index">
             <button
               class="btn btn-outline-secondary"
