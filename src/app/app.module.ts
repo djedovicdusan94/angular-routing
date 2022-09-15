@@ -164,8 +164,17 @@ export class AppModule {}
 //  - ProductEdit -> products/:id/edit
 // As we can see in the examples above, always try to find common route path name which will clearly express the relationship between these features.
 
-// * Additional tips:
+// * Additional tips / interesting facts:
 // Components which are rendered by using <router-outlet> do not need to have a selector property because they will only get rendered by a router.
+// ActivatedRoute class contains a property snapshot: ActivatedRouteSnapshot . ActivatedRouteSnapshot is used in resolvers instead of ActivatedRoute class.
+
+// * Providing data with a route:
+//  - Via required route parameters
+//  - Via optional route parameters
+//  - Via Query parameters
+//  - Via route's data property
+//  - Via route resolver
+//  - Via Angular service
 
 // * Route parameters:
 //  - One component may have data that another component need. We can swiftly pass that data as we route from one component to the next using route parameters.
@@ -236,11 +245,51 @@ export class AppModule {}
 //          Or programmatically - this.router.navigate(["/products"], { queryParamsHandling: "preserve" });
 //      Now we can ready back our query parameters inside product list page:
 //        via snapshot syntax (note that parameters always come as strings):
-//          --------------------
-//          global properties:
-//            listFilter = "";
-//            showImage = false;
-//          --------------------
-//          ngOnInit:
-//            this.listFilter = this.route.snapshot.queryParamMap.get("filterBy") || "" // We also handle the case where filterBy is undefined (initial component render).
-//            this.showImage = this.route.snapshot.queryParamMap.get("showImage") === "true" // Returns true, otherwise defaults to false which is set initially.
+//         |--------------------
+//         |global properties:
+//         |  listFilter = "";
+//         |  showImage = false;
+//         |--------------------
+//         |ngOnInit:
+//         |  this.listFilter = this.route.snapshot.queryParamMap.get("filterBy") || "" // We also handle the case where filterBy is undefined (initial component render).
+//         |  this.showImage = this.route.snapshot.queryParamMap.get("showImage") === "true" // Returns true, otherwise defaults to false which is set initially.
+
+// * Providing data with a route (data property):
+//  - A route definition also has a data property. We use it to provide any arbitrary data to a route. This is also used to get the data from the resolvers.
+//      data property is passed as object which contains key-value pairs.
+//      Data defined in the data property cannot change throughout a lifetime of the application so we often use it for displaying static data.
+//      To read data property we use the ActivatedRoute service:
+//        RouterModule.forChild([ { path: "products", component: ProductComponent, data: { pageTitle: "ProductList" } } ])
+//        this.pageTitle = this.route.snapshot.data["pageTitle"];
+
+// * Route resolvers
+//  - Enables data prefetching.
+//  - Improves flow when an error occurs.
+//  - Prevents display of a partial page while waiting for data to be retrieved. Resolver can get the data first and then route to the component.
+//  - Without route resolver component class gets the data after class has already been initialized. With route resolver, the resolver service gets the data,
+//      so the template is not displayed until it has the data it needs. This provides much better visual appearance and nicer user experience.
+//  - Steps for implementing resolvers inside application:
+//    - Build a route resolver service.
+//    - Add resolve to the route definition.
+//    - When the route gets the data that our component needs, modify the associated component to
+//        read its data from the ActivatedRoute service (similar to reading data from route parameters).
+//  - Resolver is regular class which you create and implement Resolve interface to that class.
+//  - When adding resolver to route definition know that you can add any number of resolvers for a single route.
+//      Just be sure that each key inside of single resolve object is unique:
+/*  --------------------------------------
+/   |{
+/   |   path: "products/:id",
+/   |   component: ProductDetailComponent,
+/   |   resolve: {
+/   |     resolvedData: ProductResolver, // View more details about this resolver inside app/product/product-resolver.service.ts
+/   |   },
+/   |},
+*/
+//  - We can use the ActivatedRoute snapshot to read the resolver data. Simply access the data property of the snapshot referencing the desired element
+//      using the name of the data we defined in the route configuration, or in this case:
+//        Via snapshot: this.product = this.route.snapshot.data["resolvedData"];
+//        Via observable: this.route.data.subscribe(data => this.product = data["product"]);
+//        To understand difference between 2 approaches read "Difference between reading route parameters via snapshot vs observable".
+//  - Accessing the data array from the ActivatedRoute service gives us a reference to the data instance. All code that retrieves and works with the same
+//      element from the data array shares the same instance. So any change made to this property in any one component is seen by all components that
+//      reference the same property. This sharing of the data instance is useful when we are working with child routes as we will see later.

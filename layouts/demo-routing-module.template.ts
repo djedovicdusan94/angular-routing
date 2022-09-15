@@ -3,4 +3,4 @@ import { NgModule } from "@angular/core";
 @NgModule({
   imports: [],
 })
-export class AppRoutingModule {}
+export class DemoRoutingModule {}
