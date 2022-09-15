@@ -1,3 +1,5 @@
+// Most of this docs is based on https://app.pluralsight.com/library/courses/angular-routing/table-of-contents
+
 import { NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 import { HttpClientModule } from "@angular/common/http";
@@ -92,12 +94,12 @@ import { AppRoutingModule } from "./products/app-routing.module";
 })
 export class AppModule {}
 
-// Things which Angular router can handle:
+// * Things which Angular router can handle:
 //  - Menu option, link, image or button that activates a route.
 //  - Typing the url in the address bar, clicking on a bookmark.
 //  - The browser's forward or back buttons.
 
-// Url rewriting:
+// * Url rewriting:
 //  - HTML 5 style urls (/welcome):
 //      When using client-side applications like Angular which might already be deployed on some production servers, there is often an issue where
 //        application might break when refreshed on non root route, or when accessed from a bookmark. This problems can be solved by configuring
@@ -107,54 +109,138 @@ export class AppModule {}
 //      Key benefit here is that they don't require url rewriting because the server ignores everything after the hash.
 //      To use hash style urls we pass an object into the forRoot like RouterModule.forRoot([...], { useHash: true })
 
-// Activating a route:
+// * Activating a route:
 //  - We use routerLink element to associate visual elements with route paths.
 //  - routerLink is an attribute directive so we add it to a clickable element, such as a button, image or anchor tag.
 //  - We bind routerLink directive to a template expression that returns a link parameters array. Since this is an array we need square brackets.
 //  - First element of this array is the root of parent url segment. Be sure to include a slash before the segment! Path casing is important!
 //  - Additional elements can be added to this array to specify route parameters or additional route segments.
-// <a [routerLink]="['/welcome']">Home</a>
-// <a [routerLink]="['/products']">Products</a>
-// Since this particular arrays only contains simple string elements we could use the shortcut syntax and assign the routerLink to a simple string:
-// <a routerLink="/welcome">Home</a>
-// <a routerLink="/products">Products</a
+//      <a [routerLink]="['/welcome']">Home</a>
+//      <a [routerLink]="['/products']">Products</a>
+//      <a [routerLink]="['/products', product.id]">Product</a>
+//      <a [routerLink]="['/products', product.id, 'edit']">Edit</a>
+//      <a [routerLink]="['/products', 0, 'edit']">Create</a> -> Nice way to check if current route should create new product instead of edit it.
+//  - Since this particular arrays only contains simple string elements we could use the shortcut syntax and assign the routerLink to a simple string:
+//      <a routerLink="/welcome">Home</a>
+//      <a routerLink="/products">Products</a
 
-// Activating a route with code:
+// * Activating a route with code:
 //  - To route with code, we use Angular's router service.
 //  - First we import Router - import { Router } from "@angular/router"
 //  - Then we define a dependency on the router service using a constructor - constructor(private router: Router) { }
 //  - Angular's dependency injector will inject the router instance into a component.
-//  - Finally programmatic navigation can be done with - this.router.navigate(["/welcome"]);
-//  - When the link parameters array contains static string we can use a shortcut syntax just as we did with routerLink - this.router.navigate("/welcome");
-//  - When you want to ensure that every existing parameter or secondary route is removed use - this.router.navigateByUrl("/welcome"); This is often used
-//      when logging out from the application.
+//  - Finally programmatic navigation can be done with:
+//      this.router.navigate(["/welcome"]);
+//      this.router.navigate(["/products", this.product.id]);
+//  - When the link parameters array contains static string we can use a shortcut syntax just as we did with routerLink:
+//      this.router.navigate("/welcome");
+//  - When you want to ensure that every existing parameter or secondary route is removed use:
+//      this.router.navigateByUrl("/welcome"); - This is often used when logging out from the application.
 
-// Feature module:
+// * Feature module:
 //  - An Angular module created with the express purpose of organizing the components for a specific application feature area.
 //  - They allow us to keep the code more organized and also to implement lazy loading for all of the routes for a particular feature area.
 
-// Shared module:
+// * Shared module:
 //  - Pulls in modules that can be shared across all of the feature modules.
 
-// Route merging and order of route execution:
+// * Route merging and order of route execution:
 //  - Angular router will merge all the routes defined in the AppModule with routes from the feature modules (ProductModule, UserModule).
 //  - This way application will always have access to all of the routes.
-//    When app is compiled, final merged route configuration should look something like this: products, login, welcome, '', **
+//  - When app is compiled, final merged route configuration should look something like this: products, login, welcome, '', **
 //      Any route definitions that are explicitly configured in a root app module (such as the routes we can see in AppRoutingModule) should be processed
 //        last after any imported modules (ProductModule, UserModule).
 //      Only if your module imports are declared in a proper way route path matching will be executed correctly. In this case AppRoutingModule import
 //        should come after ProductModule and UserModule because we want wildcard route (**) which comes from AppRoutingModule
 //        to not cut/interfere with routes from ProductModule/UserModule.
 
-// Why define a routing module?
+// * Why define a routing module?
 //  - Better code organization.
 //  - Separation of concerns.
 
-// Route path best naming conventions:
+// * Route path best naming conventions:
 //  - ProductList -> products
 //  - ProductDetail -> products/:id
 //  - ProductEdit -> products/:id/edit
 // As we can see in the examples above, always try to find common route path name which will clearly express the relationship between these features.
 
-// Additional tips:
+// * Additional tips:
 // Components which are rendered by using <router-outlet> do not need to have a selector property because they will only get rendered by a router.
+
+// * Route parameters:
+//  - One component may have data that another component need. We can swiftly pass that data as we route from one component to the next using route parameters.
+//  - Best used for passing small amount of data, like ids, keys, keywords, etc..
+//  - The router extracts any route parameters from the url and supplies them to the component trough the ActivatedRoute service.
+//  - ActivatedRoute is one stop shop for route information. It provides access to:
+//      Set of url segments
+//      Route parameters
+//      Query parameters
+//      Route data
+//      And many more!
+//  - Any components instantiated by the router can inject ActivatedRoute service.
+//  - Once injected there are two basic ways to use ActivatedRoute service to read route parameters:
+//    - Via snapshot:
+//        Provides initial state of the route, including the initial value of the route parameters:
+//          const id = this.route.snapshot.paramMap.get("id");
+//    - Via observable:
+//        The observable keeps a watch on the parameters and receives a notification every time the parameters change:
+//          this.route.paramMap.subscribe(params => { const id = params.get("id") });
+//    - Difference between reading route parameters via snapshot vs observable:
+//        Imagine that the user is on the following route - localhost:4200/products/5/edit. This route represents some edit product route.
+//          Suddenly user navigates to the add product route on localhost:4200/products/0/edit. Route parameter would change
+//            in the url from /products/5/edit (edit product) to /products/0/edit (create product) but edit form would still not change for entry of a new product.
+//          Remember that if only parameters of the url change, like in this case from id=5 (edit product) to id=0 (create product) the component will
+//            not get initialized again and ngOnInit will not be executed.
+//          So how do we handle a change in parameters? Well instead of reading a route parameters via snapshot syntax we watch for parameter changes using observable.
+//             ------------------------------------------------
+/*             |ngOnInit(): void {
+/              |   this.route.paramMap.subscribe((params) => {
+/              |   console.log(params);
+/              |   const id = params.get("id");
+/              |   this.getProduct(Number(id));
+/              | });
+/              |}
+*/
+
+// * Optional route parameters:
+//  - Optional route parameters make it easier to pass optional or more complex information as part of the route.
+//  - This optional configuration is not part of the route configuration and it is not involved in matching route paths for navigation.
+//      This way adding more optional parameters over time will not affect the application routing.
+//  - Optional parameters are defined in the link parameters array as a set of key-value pairs.
+//  - Any optional parameters must come after any required parameters in the link parameters array.
+//  - Here is the example, imagine that we pass this link parameters array from some filters page to product list page which will accept all of these optional parameters:
+//      <a [routerLink]="['/products', { name: productName, code: productCode, startDate: availabilityStart, endDate: availabilityEnd }]">Apply filter</a>
+//      Link parameters array above will generate following url:
+//        localhost:4200/products;name=Controller;code=gmg;startDate=March%201%2C%202018;endDate=March%201%2C%202019
+//          In the url above we can se that keys and values are separated by semicolons. Spaces and comas are encoded.
+
+// * Query parameters:
+//  - Imagine that the user is on the product list page. He is working with some data table, he toggles and filters various table rows, columns, etc..
+//      At some point user navigates to product details page to check for some additional info and after he is finished
+//        he uses back button to go back to the product list page.
+//      When he is back at the product list page user notices that all of his filtered data, selections, etc.. are all gone.
+//      It would be a much nicer user experience if we retained the user settings when navigating to the product details page and return those settings
+//        when the user navigates back to the product list page.
+//      We can solve this by using query parameters. Just like optional parameters we use this to pass optional or complex information.
+//      Unlike optional parameters, query parameters can be retained across routing paths but not by default.
+//      Like optional parameters, query parameters are not part of route configuration and are not involved with matching route paths.
+//      We populate required and optional route parameters by adding them to the link parameters array,
+//        but in the case of query parameters we must pass them separately:
+//          <a [routerLink]="['/products', product.id]" [queryParams]="{ filterBy: 'er', showImage: true }">{{ product.productName }}</a>
+//      When navigating inside code we add a second argument to the navigate method:
+//        this.router.navigate(['/products', product.id], { queryParams: { filterBy: 'er', showImage: true } } );
+//      When you navigated to product details page using query parameters you will get something like: localhost:4200/products/5?filterBy=er&showImage=true
+//      When navigating back from product details page to product list page url will not be retained by default..
+//        When inside product details page you must add following to your back button to retain parameters and use them back in product details page:
+//          <a [routerLink]="['/products']" queryParamsHandling="preserve">Back</a>
+//          Or programmatically - this.router.navigate(["/products"], { queryParamsHandling: "preserve" });
+//      Now we can ready back our query parameters inside product list page:
+//        via snapshot syntax (note that parameters always come as strings):
+//          --------------------
+//          global properties:
+//            listFilter = "";
+//            showImage = false;
+//          --------------------
+//          ngOnInit:
+//            this.listFilter = this.route.snapshot.queryParamMap.get("filterBy") || "" // We also handle the case where filterBy is undefined (initial component render).
+//            this.showImage = this.route.snapshot.queryParamMap.get("showImage") === "true" // Returns true, otherwise defaults to false which is set initially.
