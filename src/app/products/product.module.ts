@@ -15,33 +15,42 @@ import { ProductResolver } from "./product-resolver.service";
     // Pulls in modules that can be shared across all of the feature modules.
     SharedModule,
     RouterModule.forChild([
-      { path: "products", component: ProductListComponent },
       {
-        path: "products/:id",
-        component: ProductDetailComponent,
-        resolve: {
-          resolvedData: ProductResolver,
-        },
-      },
-      {
-        path: "products/:id/edit",
-        component: ProductEditComponent,
-        resolve: {
-          resolvedData: ProductResolver,
-        },
+        // Since this parent route is component-less, the child component templates appear in the outlet one level above (in this case primary outlet).
+        path: "products",
         children: [
           {
             path: "",
-            redirectTo: "info",
-            pathMatch: "full",
+            component: ProductListComponent,
           },
           {
-            path: "info",
-            component: ProductEditInfoComponent,
+            path: ":id", // Instead of the full path name like before, we can now use relative paths, because now ProductDetailComponent is on the child route.
+            component: ProductDetailComponent,
+            resolve: {
+              resolvedData: ProductResolver,
+            },
           },
           {
-            path: "tags",
-            component: ProductEditTagsComponent,
+            path: ":id/edit", // Instead of the full path name like before, we can now use relative paths, because now ProductEditComponent is on the child route.
+            component: ProductEditComponent,
+            resolve: {
+              resolvedData: ProductResolver,
+            },
+            children: [
+              {
+                path: "",
+                redirectTo: "info",
+                pathMatch: "full",
+              },
+              {
+                path: "info",
+                component: ProductEditInfoComponent,
+              },
+              {
+                path: "tags",
+                component: ProductEditTagsComponent,
+              },
+            ],
           },
         ],
       },

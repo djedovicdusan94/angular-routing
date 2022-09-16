@@ -400,3 +400,83 @@ export class AppModule {}
 //  - Best pattern is to define a form in each child component, but perform manual validation.
 //  - Since the save button is on the parent ProductEditComponent we will add the validation there.
 //  - For more information on how to implement this please visit ProductEditComponent.
+
+// * Grouping routes and component-less routes:
+//  - Currently our products route configuration looks like this:
+//     |-------------------------------------------------------------
+//     |RouterModule.forChild([
+//     |  { path: "products", component: ProductListComponent },
+//     |  {
+//     |    path: "products/:id",
+//     |    component: ProductDetailComponent,
+//     |    resolve: {
+//     |      resolvedData: ProductResolver,
+//     |    },
+//     |  },
+//     |  {
+//     |    path: "products/:id/edit",
+//     |    component: ProductEditComponent,
+//     |    resolve: {
+//     |      resolvedData: ProductResolver,
+//     |    },
+//     |    children: [
+//     |      {
+//     |        path: "",
+//     |        redirectTo: "info",
+//     |        pathMatch: "full",
+//     |      },
+//     |      {
+//     |        path: "info",
+//     |        component: ProductEditInfoComponent,
+//     |      },
+//     |      {
+//     |        path: "tags",
+//     |        component: ProductEditTagsComponent,
+//     |      },
+//     |    ],
+//     |  },
+//     |]),
+//  - We could instead group our routes in such way that the ProductDetailComponent and ProductEditComponent are children of the component-less products route.
+//  - Since child routes extend the path of the parent route we specify relative path, making our path names shorter and more durable as paths change over time.
+//     |---------------------------------------------------------------------------------------------------------------------------------------------------------
+//     |RouterModule.forChild([
+//     |  {
+//     |    // Since this parent route is component-less, the child component templates appear in the outlet one level above (in this case primary outlet).
+//     |    path: "products",
+//     |    children: [
+//     |      {
+//     |        path: "",
+//     |        component: ProductListComponent,
+//     |      },
+//     |      {
+//     |        path: ":id", // Instead of the full path name like before, we can now use relative paths, because now ProductDetailComponent is on the child route.
+//     |        component: ProductDetailComponent,
+//     |        resolve: {
+//     |          resolvedData: ProductResolver,
+//     |        },
+//     |      },
+//     |      {
+//     |        path: ":id/edit", // Instead of the full path name like before, we can now use relative paths, because now ProductEditComponent is on the child route.
+//     |        component: ProductEditComponent,
+//     |        resolve: {
+//     |          resolvedData: ProductResolver,
+//     |        },
+//     |        children: [
+//     |          {
+//     |            path: "",
+//     |            redirectTo: "info",
+//     |            pathMatch: "full",
+//     |          },
+//     |          {
+//     |            path: "info",
+//     |            component: ProductEditInfoComponent,
+//     |          },
+//     |          {
+//     |            path: "tags",
+//     |            component: ProductEditTagsComponent,
+//     |          },
+//     |        ],
+//     |      },
+//     |    ],
+//     |  },
+//     |]),
